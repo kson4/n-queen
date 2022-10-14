@@ -25,6 +25,6 @@ export function getConflicts(map) {
     });
     // console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~");
   });
-  console.log(conflicts);
+  // console.log(conflicts);
   return conflicts;
 }

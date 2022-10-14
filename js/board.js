@@ -62,7 +62,6 @@ class Board {
     );
     const curCost = getConflicts(this.queenMap);
     let minCost = curCost;
-    console.log("current arrangement: ", minArrangement);
     for (let i = 0; i < this.numQueens; i++) {
       for (let j = 0; j < this.numQueens; j++) {
         if (this.queenMap.get(i) !== j) {
@@ -73,7 +72,7 @@ class Board {
           arrangement.set(i, j);
           // console.log(arrangement);
           const cost = getConflicts(arrangement);
-          if (minCost > cost) {
+          if (minCost > cost || minCost == cost) {
             minCost = cost;
             minArrangement = new Map(
               JSON.parse(JSON.stringify(Array.from(arrangement)))
@@ -82,12 +81,14 @@ class Board {
         }
       }
     }
-    // console.log();
-    // console.log("new minimum arrangement: ", minArrangement);
-    // this.displayCells();
-    // this.displayQueens(minArrangement);
+    if (minCost == 0) {
+      console.log("SOLUTION FOUND");
+    }
     this.queenMap = minArrangement;
-    return curCost == minCost;
+    console.log("number of conflicts: ", minCost);
+    // return curCost == minCost;
+
+    return minCost == 0;
   }
 }
 
@@ -100,7 +101,7 @@ class Cell {
   }
 }
 
-export const board = new Board(1000, 1000, 5);
+export const board = new Board(1000, 1000, 30);
 // board.displayBoard();
 board.getCells();
 board.displayCells();
@@ -110,6 +111,16 @@ console.log(board.queenMap);
 console.log(board.cells);
 
 function runSteepest() {
+  // setTimeout(() => {
+  //   let found = board.steepestClimb();
+  //   if (found) {
+  //     console.log("could not find a better arrangement");
+  //   } else {
+  //     board.displayCells();
+  //     board.displayQueens(board.queenMap);
+  //     runSteepest();
+  //   }
+  // }, 500);
   setTimeout(() => {
     let found = board.steepestClimb();
     if (found) {
@@ -119,7 +130,7 @@ function runSteepest() {
       board.displayQueens(board.queenMap);
       runSteepest();
     }
-  }, 1000);
+  }, 250);
 }
 
-runSteepest();
+// runSteepest();
