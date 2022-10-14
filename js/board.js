@@ -9,7 +9,7 @@ class Board {
     this.colors = ["white", "gray"];
     this.numQueens = numQueens;
     this.cells = [];
-    this.queens = [];
+    this.queens = new Map();
     this.row = this.bWidth / this.numQueens;
     this.col = this.bHeight / this.numQueens;
   }
@@ -25,13 +25,8 @@ class Board {
   }
   getQueens() {
     for (let i = 0; i < this.numQueens; i++) {
-      const queenRows = [];
-      for (let j = 0; j < this.numQueens; j++) {
-        queenRows.push(0);
-      }
       const rng = Math.floor(Math.random() * this.numQueens);
-      queenRows.splice(rng, 1, 1);
-      this.queens.push(queenRows);
+      this.queens.set(i, rng);
     }
   }
   displayCells() {
@@ -52,19 +47,9 @@ class Board {
     const img = new Image();
     img.src = "../img/queen.png";
     img.onload = () => {
-      for (let i = 0; i < this.queens.length; i++) {
-        for (let j = 0; j < this.queens[0].length; j++) {
-          if (this.queens[i][j] == 1) {
-            this.ctx.drawImage(
-              img,
-              j * this.row,
-              i * this.col,
-              this.row,
-              this.col
-            );
-          }
-        }
-      }
+      this.queens.forEach((k, v) => {
+        this.ctx.drawImage(img, k * this.row, v * this.col, this.row, this.col);
+      });
     };
   }
 }
@@ -78,7 +63,7 @@ class Cell {
   }
 }
 
-const board = new Board(1000, 1000, 5);
+export const board = new Board(1000, 1000, 5);
 // board.displayBoard();
 board.getCells();
 board.displayCells();
