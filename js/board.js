@@ -1,17 +1,21 @@
+import { getConflicts } from "./functions.js";
+
 class Board {
   constructor(bWidth, bHeight, numQueens) {
+    this.numQueens = numQueens;
     this.bWidth = bWidth;
     this.bHeight = bHeight;
     this.htmlBoard = document.querySelector("#board");
     this.htmlBoard.width = bHeight;
     this.htmlBoard.height = bHeight;
     this.ctx = this.htmlBoard.getContext("2d");
-    this.colors = ["white", "gray"];
-    this.numQueens = numQueens;
-    this.cells = [];
-    this.queens = new Map();
     this.row = this.bWidth / this.numQueens;
     this.col = this.bHeight / this.numQueens;
+
+    this.colors = ["white", "gray"];
+    this.cells = [];
+
+    this.queenMap = new Map();
   }
   getCells() {
     for (let i = 0; i < this.numQueens; i++) {
@@ -26,7 +30,7 @@ class Board {
   getQueens() {
     for (let i = 0; i < this.numQueens; i++) {
       const rng = Math.floor(Math.random() * this.numQueens);
-      this.queens.set(i, rng);
+      this.queenMap.set(i, rng);
     }
   }
   displayCells() {
@@ -43,14 +47,47 @@ class Board {
     this.ctx.fillRect(0, 0, this.bWidth, this.bHeight);
     this.ctx.fillRect(0, 0, 3000, 3000);
   }
-  displayQueens() {
+  displayQueens(map) {
     const img = new Image();
     img.src = "../img/queen.png";
     img.onload = () => {
-      this.queens.forEach((k, v) => {
+      map.forEach((k, v) => {
         this.ctx.drawImage(img, k * this.row, v * this.col, this.row, this.col);
       });
     };
+  }
+  steepestClimb() {
+    let minArrangement = new Map(
+      JSON.parse(JSON.stringify(Array.from(this.queenMap)))
+    );
+    const curCost = getConflicts(this.queenMap);
+    let minCost = curCost;
+    console.log("current arrangement: ", minArrangement);
+    for (let i = 0; i < this.numQueens; i++) {
+      for (let j = 0; j < this.numQueens; j++) {
+        if (this.queenMap.get(i) !== j) {
+          const arrangement = new Map(
+            JSON.parse(JSON.stringify(Array.from(this.queenMap)))
+          );
+          arrangement.delete(i);
+          arrangement.set(i, j);
+          // console.log(arrangement);
+          const cost = getConflicts(arrangement);
+          if (minCost > cost) {
+            minCost = cost;
+            minArrangement = new Map(
+              JSON.parse(JSON.stringify(Array.from(arrangement)))
+            );
+          }
+        }
+      }
+    }
+    // console.log();
+    // console.log("new minimum arrangement: ", minArrangement);
+    // this.displayCells();
+    // this.displayQueens(minArrangement);
+    this.queenMap = minArrangement;
+    return curCost == minCost;
   }
 }
 
@@ -68,6 +105,21 @@ export const board = new Board(1000, 1000, 5);
 board.getCells();
 board.displayCells();
 board.getQueens();
-board.displayQueens();
-console.log(board.queens);
+board.displayQueens(board.queenMap);
+console.log(board.queenMap);
 console.log(board.cells);
+
+function runSteepest() {
+  setTimeout(() => {
+    let found = board.steepestClimb();
+    if (found) {
+      console.log("could not find a better arrangement");
+    } else {
+      board.displayCells();
+      board.displayQueens(board.queenMap);
+      runSteepest();
+    }
+  }, 1000);
+}
+
+runSteepest();
