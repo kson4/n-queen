@@ -1,4 +1,4 @@
-import { getConflicts } from "./functions.js";
+import { getConflicts, showConflicts } from "./functions.js";
 
 class Board {
   constructor(bWidth, bHeight, numQueens) {
@@ -56,12 +56,23 @@ class Board {
       });
     };
   }
+  showSolution(map) {
+    this.ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
+    console.log(map);
+    map.forEach((k, v) => {
+      for (let i = 0; i < this.numQueens; i++) {
+        const cell = this.cells[k][i];
+        this.ctx.fillRect(cell.x, cell.y, cell.x2, cell.y2);
+      }
+    });
+  }
   steepestClimb() {
     let minArrangement = new Map(
       JSON.parse(JSON.stringify(Array.from(this.queenMap)))
     );
-    const curCost = getConflicts(this.queenMap);
+    const curCost = getConflicts(this.queenMap, this.cells);
     let minCost = curCost;
+
     for (let i = 0; i < this.numQueens; i++) {
       for (let j = 0; j < this.numQueens; j++) {
         if (this.queenMap.get(i) !== j) {
@@ -71,8 +82,9 @@ class Board {
           arrangement.delete(i);
           arrangement.set(i, j);
           // console.log(arrangement);
-          const cost = getConflicts(arrangement);
+          const cost = getConflicts(arrangement, this.cells);
           if (minCost > cost || minCost == cost) {
+            // if (minCost > cost) {
             minCost = cost;
             minArrangement = new Map(
               JSON.parse(JSON.stringify(Array.from(arrangement)))
@@ -101,7 +113,7 @@ class Cell {
   }
 }
 
-export const board = new Board(1000, 1000, 30);
+export const board = new Board(1000, 1000, 10);
 // board.displayBoard();
 board.getCells();
 board.displayCells();
@@ -110,6 +122,7 @@ board.displayQueens(board.queenMap);
 console.log(board.queenMap);
 console.log(board.cells);
 
+const steepestMap = new Set();
 function runSteepest() {
   // setTimeout(() => {
   //   let found = board.steepestClimb();
@@ -123,14 +136,24 @@ function runSteepest() {
   // }, 500);
   setTimeout(() => {
     let found = board.steepestClimb();
-    if (found) {
+    if (found || steepestMap.has(JSON.stringify(Array.from(board.queenMap)))) {
       console.log("could not find a better arrangement");
+      board.displayQueens(board.queenMap);
+      showConflicts(board.queenMap, board.cells);
+      console.log(board.queenMap);
+      // board.showSolution(board.queenMap);
     } else {
+      steepestMap.add(JSON.stringify(Array.from(board.queenMap)));
       board.displayCells();
       board.displayQueens(board.queenMap);
+      showConflicts(board.queenMap, board.cells);
+      setTimeout(() => {
+        board.displayCells();
+        board.displayQueens(board.queenMap);
+      }, 250);
       runSteepest();
     }
-  }, 250);
+  }, 500);
 }
 
-// runSteepest();
+runSteepest();
