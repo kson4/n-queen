@@ -16,6 +16,8 @@ class Board {
     this.cells = [];
 
     this.queenMap = new Map();
+
+    this.steepestClimbSet = new Set();
   }
   getCells() {
     for (let i = 0; i < this.numQueens; i++) {
@@ -83,7 +85,10 @@ class Board {
           arrangement.set(i, j);
           // console.log(arrangement);
           const cost = getConflicts(arrangement, this.cells);
-          if (minCost > cost || minCost == cost) {
+          if (
+            (minCost > cost || minCost == cost) &&
+            !this.steepestClimbSet.has(JSON.stringify(Array.from(arrangement)))
+          ) {
             // if (minCost > cost) {
             minCost = cost;
             minArrangement = new Map(
@@ -99,7 +104,7 @@ class Board {
     this.queenMap = minArrangement;
     console.log("number of conflicts: ", minCost);
     // return curCost == minCost;
-
+    this.steepestClimbSet.add(JSON.stringify(Array.from(this.queenMap)));
     return minCost == 0;
   }
 }
@@ -113,7 +118,7 @@ class Cell {
   }
 }
 
-export const board = new Board(1000, 1000, 10);
+export const board = new Board(1000, 1000, 25);
 // board.displayBoard();
 board.getCells();
 board.displayCells();
@@ -123,37 +128,22 @@ console.log(board.queenMap);
 console.log(board.cells);
 
 const steepestMap = new Set();
-function runSteepest() {
-  // setTimeout(() => {
-  //   let found = board.steepestClimb();
-  //   if (found) {
-  //     console.log("could not find a better arrangement");
-  //   } else {
-  //     board.displayCells();
-  //     board.displayQueens(board.queenMap);
-  //     runSteepest();
-  //   }
-  // }, 500);
+let steepestHillConflicts = [];
+export function runSteepest() {
   setTimeout(() => {
     let found = board.steepestClimb();
     if (found || steepestMap.has(JSON.stringify(Array.from(board.queenMap)))) {
       console.log("could not find a better arrangement");
+      board.displayCells();
       board.displayQueens(board.queenMap);
-      showConflicts(board.queenMap, board.cells);
+      steepestHillConflicts = showConflicts(board.queenMap, board.cells);
       console.log(board.queenMap);
-      // board.showSolution(board.queenMap);
     } else {
       steepestMap.add(JSON.stringify(Array.from(board.queenMap)));
       board.displayCells();
       board.displayQueens(board.queenMap);
-      showConflicts(board.queenMap, board.cells);
-      setTimeout(() => {
-        board.displayCells();
-        board.displayQueens(board.queenMap);
-      }, 250);
+      const conflicts = showConflicts(board.queenMap, board.cells);
       runSteepest();
     }
   }, 500);
 }
-
-runSteepest();
